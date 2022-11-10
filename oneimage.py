@@ -46,4 +46,8 @@ segmented_image = segmented_image.reshape(img.shape)
 
 # show the image
 plt.imshow(segmented_image)
+plt.grid()
 plt.show()
+
+# find contours
+cv2.findContours(segmented_image)
