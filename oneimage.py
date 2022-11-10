@@ -14,6 +14,12 @@ img_init = Image.open('images/0073.tif')
 # save image as numpy array
 img = np.asarray(img_init)
 
+# show original image
+plt.figure(1)
+plt.subplot(1,3,1)
+plt.imshow(img)
+plt.title("Original Image")
+
 # convert image to RGB
 # img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -45,9 +51,9 @@ segmented_image = centers[labels.flatten()]
 segmented_image = segmented_image.reshape(img.shape)
 
 # show segmented image
-plt.figure(1)
-plt.subplot(1,2,1)
+plt.subplot(1,3,2)
 plt.imshow(segmented_image)
+plt.title("Segmented Image")
 
 # convert img to grey
 img_grey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -60,6 +66,8 @@ contours, hierarchy = cv2.findContours(thresh_img, cv2.RETR_TREE, cv2.CHAIN_APPR
 cv2.drawContours(img, contours, -1, (0,255,0), 3)
 
 # show contoured image
-plt.subplot(1,2,2)
+plt.subplot(1,3,3)
 plt.imshow(img)
+plt.title("Contoured Image")
+
 plt.show()
