@@ -15,7 +15,7 @@ img_init = Image.open('images/0073.tif')
 img = np.asarray(img_init)
 
 # convert image to RGB
-img = cv2.cvtColor(img,  cv2.COLOR_BGR2RGB)
+# img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 # reshape the image to a 2D array of pixels and 3 color values (RGB)
 pixel_values = img.reshape((-1, 3))
@@ -44,10 +44,22 @@ segmented_image = centers[labels.flatten()]
 # reshape back to the original image dimension
 segmented_image = segmented_image.reshape(img.shape)
 
-# show the image
+# show segmented image
+plt.figure(1)
+plt.subplot(1,2,1)
 plt.imshow(segmented_image)
-plt.grid()
-plt.show()
+
+# convert img to grey
+img_grey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+# get threshold image
+ret, thresh_img = cv2.threshold(img_grey, 100, 255, cv2.THRESH_BINARY)
 
 # find contours
-cv2.findContours(segmented_image)
+contours, hierarchy = cv2.findContours(thresh_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+cv2.drawContours(img, contours, -1, (0,255,0), 3)
+
+# show contoured image
+plt.subplot(1,2,2)
+plt.imshow(img)
+plt.show()
