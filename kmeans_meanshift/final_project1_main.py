@@ -10,8 +10,8 @@ from skimage.io import imread, imshow
 from skimage.morphology import skeletonize
 
 """
-ECE597IP FINAL PROJECT 1
-Author: Calista Greenway and Tyra Sofia Schoenfeldt
+ECE 597IP FINAL PROJECT 1
+Author: Calista Greenway
 This program performs image segmentation on mars rover images by clustering and color space transformations.
 """
 
