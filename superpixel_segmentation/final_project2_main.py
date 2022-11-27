@@ -2,7 +2,6 @@ from skimage.future import graph
 from skimage import segmentation, color
 import numpy as np
 from PIL import Image
-from felzenszwalb_segmentation import segment
 from matplotlib import pyplot as plt
 
 """
@@ -23,14 +22,20 @@ img2 = img2[:, 90:1536]
 
 
 # felzenszwalb’s algorithm (method 1)
-def felzenszwalb(input_image, sigma, k, min_size):
-    segmented_image = segment(input_image, sigma, k, min_size)
+def felzenszwalb(input_image):
+    img = input_image
+    segmented_image = segmentation.felzenszwalb(
+        img, scale=500, sigma=0.5, min_size=5000)
     fig = plt.figure(figsize=(12, 12))
     a = fig.add_subplot(1, 2, 1)
-    plt.imshow(input_image)
+    plt.imshow(img)
     a = fig.add_subplot(1, 2, 2)
-    plt.imshow(segmented_image.astype(np.uint8))
+    plt.imshow(segmentation.mark_boundaries(img, segmented_image, mode='thick'))
     plt.show()
+
+    # results
+    print(
+        f'Felzenszwalb number of segments {len(np.unique(segmented_image))}')
 
 
 # felzenszwalb over-segmentation with rag merge (method 2)
@@ -44,13 +49,16 @@ def felzenszwalb_rag(input_image):
                                        in_place_merge=True, merge_func=merge_mean_color, weight_func=_weight_mean_color)
 
     out = color.label2rgb(labels2, img, kind='avg', bg_label=0)
-    out = segmentation.mark_boundaries(out, labels2, (0, 0, 0))
+    out = segmentation.mark_boundaries(out, labels2, mode='thick')
     fig = plt.figure(figsize=(12, 12))
     a = fig.add_subplot(1, 2, 1)
     plt.imshow(img)
     a = fig.add_subplot(1, 2, 2)
     plt.imshow(out)
     plt.show()
+
+    # results
+    print(f'Felzenszwalb number of segments: {len(np.unique(out))}')
 
 
 def _weight_mean_color(graph, src, dst, n):  # function from plot_rag_merge.py
@@ -67,13 +75,13 @@ def merge_mean_color(graph, src, dst):  # function from plot_rag_merge.py
 
 
 # method 1
-# felzenszwalb(img0, 0.1, 400, 50)
-# felzenszwalb(img1, 0.1, 400, 50)
-# felzenszwalb(img2, 0.1, 400, 50)
-# felzenszwalb(img3, 0.1, 400, 50)
+felzenszwalb(img0)
+# felzenszwalb(img1)
+# felzenszwalb(img2)
+# felzenszwalb(img3)
 
 # method 2
-# felzenszwalb_rag(img0)
+felzenszwalb_rag(img0)
 # felzenszwalb_rag(img1)
 # felzenszwalb_rag(img2)
 # felzenszwalb_rag(img3)
