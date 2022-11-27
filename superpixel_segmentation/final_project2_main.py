@@ -1,5 +1,5 @@
 from skimage.future import graph
-from skimage import segmentation, color
+from skimage import segmentation, color, filters
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
@@ -27,34 +27,40 @@ def felzenszwalb(input_image):
     segmented_image = segmentation.felzenszwalb(
         img, scale=500, sigma=0.5, min_size=5000)
     fig = plt.figure(figsize=(12, 12))
-    a = fig.add_subplot(1, 2, 1)
-    plt.imshow(img)
-    a = fig.add_subplot(1, 2, 2)
-    plt.imshow(segmentation.mark_boundaries(img, segmented_image, mode='thick'))
+    a = fig.add_subplot(1, 3, 1)
+    plt.imshow(img)  # original image
+    a = fig.add_subplot(1, 3, 2)
+    plt.imshow(segmented_image)  # segmented image
+    a = fig.add_subplot(1, 3, 3)
+    out = color.label2rgb(segmented_image, img, kind='avg', bg_label=0)
+    plt.imshow(segmentation.mark_boundaries(  # boundaries marked
+        out, segmented_image, mode='thick'))
     plt.show()
 
     # results
     print(
-        f'Felzenszwalb number of segments {len(np.unique(segmented_image))}')
+        f'Felzenszwalb number of segments: {len(np.unique(segmented_image))}')
 
 
 # felzenszwalb over-segmentation with rag merge (method 2)
 def felzenszwalb_rag(input_image):
     img = input_image
-    labels = segmentation.slic(
-        img, compactness=30, n_segments=400, start_label=1)
+    labels = segmentation.felzenszwalb(
+        img, scale=500, sigma=0.5, min_size=500)
     g = graph.rag_mean_color(img, labels)
 
-    labels2 = graph.merge_hierarchical(labels, g, thresh=35, rag_copy=False,
+    labels2 = graph.merge_hierarchical(labels, g, thresh=95, rag_copy=False,
                                        in_place_merge=True, merge_func=merge_mean_color, weight_func=_weight_mean_color)
 
     out = color.label2rgb(labels2, img, kind='avg', bg_label=0)
     out = segmentation.mark_boundaries(out, labels2, mode='thick')
     fig = plt.figure(figsize=(12, 12))
-    a = fig.add_subplot(1, 2, 1)
-    plt.imshow(img)
-    a = fig.add_subplot(1, 2, 2)
-    plt.imshow(out)
+    a = fig.add_subplot(1, 3, 1)
+    plt.imshow(labels)  # before merge
+    a = fig.add_subplot(1, 3, 2)
+    plt.imshow(labels2)  # after merge
+    a = fig.add_subplot(1, 3, 3)
+    plt.imshow(out)  # boundaries marked
     plt.show()
 
     # results
@@ -75,7 +81,7 @@ def merge_mean_color(graph, src, dst):  # function from plot_rag_merge.py
 
 
 # method 1
-felzenszwalb(img0)
+# felzenszwalb(img0)
 # felzenszwalb(img1)
 # felzenszwalb(img2)
 # felzenszwalb(img3)
