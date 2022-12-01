@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from skimage.future import graph
-from skimage import segmentation, color, filters
+from skimage import segmentation, color
 from PIL import Image
 from matplotlib import pyplot as plt
 
@@ -87,20 +87,53 @@ def merge_mean_color(graph, src, dst):  # function from plot_rag_merge.py
 
 # slic superpixels (method 3)
 def slic_superpixels(input_image):
-    pass
+    img = input_image
+
+    # implement SLIC
+    labels = segmentation.slic(img, n_segments=300, compactness=60)
+
+    # implement Region Adjacency Graphs
+    g = graph.rag_mean_color(img, labels)
+
+    # show results from SLIC with RAG
+    with_rag = graph.show_rag(labels, g, img)
+
+    # implement Hierarchical Merging
+    labels2 = graph.merge_hierarchical(labels, g, 37, rag_copy=False,
+                                       in_place_merge=True,
+                                       merge_func=merge_mean_color,
+                                       weight_func=_weight_mean_color)
+    g2 = graph.rag_mean_color(img, labels2)
+
+    out = color.label2rgb(labels2, img, kind='avg')
+    out = segmentation.mark_boundaries(out, labels2, (0, 0, 0))
+
+    # plot images
+    fig = plt.figure(figsize=(12, 12))
+    a = fig.add_subplot(1, 2, 1)
+    plt.imshow(segmentation.mark_boundaries(img, labels))  # ordinary SLIC
+    a = fig.add_subplot(1, 2, 2)
+    plt.imshow(out)  # resulting mask
+    plt.show()
+
+    # results
+    print(f'SLIC number of segments: {len(np.unique(labels))}')
 
 
 # kmeans clutersing (method 4 and 5)
 def kmeans_clustering(input_image):
     img = input_image
     Z = img.reshape((-1, 3))
+
     # convert to np.float32
     Z = np.float32(Z)
+
     # define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K = 8
     ret, label, center = cv2.kmeans(
         Z, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
     # convert back into uint8, and make original image
     center = np.uint8(center)
     res = center[label.flatten()]
@@ -117,31 +150,31 @@ Note:   the code below will produce 20 different figures
 """
 
 # method 1
-# felz(img0)
-# felz(img1)
-# felz(img2)
-# felz(img3)
+felz(img0)
+felz(img1)
+felz(img2)
+felz(img3)
 
 # method 2
-# felzenszwalb_rag(img0)
-# felzenszwalb_rag(img1)
-# felzenszwalb_rag(img2)
-# felzenszwalb_rag(img3)
+felzenszwalb_rag(img0)
+felzenszwalb_rag(img1)
+felzenszwalb_rag(img2)
+felzenszwalb_rag(img3)
 
 # method 3
-# slic_superpixels(img0)
-# slic_superpixels(img1)
-# slic_superpixels(img2)
-# slic_superpixels(img3)
+slic_superpixels(img0)
+slic_superpixels(img1)
+slic_superpixels(img2)
+slic_superpixels(img3)
 
 # method 4
-# slic_superpixels(kmeans_clustering(img0))
-# slic_superpixels(kmeans_clustering(img1))
-# slic_superpixels(kmeans_clustering(img2))
-# slic_superpixels(kmeans_clustering(img3))
+slic_superpixels(kmeans_clustering(img0))
+slic_superpixels(kmeans_clustering(img1))
+slic_superpixels(kmeans_clustering(img2))
+slic_superpixels(kmeans_clustering(img3))
 
 # method 5
-# felzenszwalb_rag(kmeans_clustering(img0))
-# felzenszwalb_rag(kmeans_clustering(img1))
-# felzenszwalb_rag(kmeans_clustering(img2))
-# felzenszwalb_rag(kmeans_clustering(img3))
+felzenszwalb_rag(kmeans_clustering(img0))
+felzenszwalb_rag(kmeans_clustering(img1))
+felzenszwalb_rag(kmeans_clustering(img2))
+felzenszwalb_rag(kmeans_clustering(img3))
